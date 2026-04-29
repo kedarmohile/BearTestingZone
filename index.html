@@ -6,136 +6,721 @@
   <title>Bear Testing Zone</title>
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --ink: #1f2937;
+      --soft-ink: #4b5563;
+      --card: rgba(255, 255, 255, 0.9);
+      --honey: #f8b84e;
+      --honey-dark: #d97706;
+      --leaf: #3f7d58;
+      --sky: #dff7ff;
+      --cream: #fff3d6;
+      --bear: #9a6a3a;
+      --bear-face: #f3d2a2;
+      --wall: #4f6f52;
+      --path: #fff8e8;
+      --danger: #ef4444;
+      --shadow: 0 24px 80px rgba(31, 41, 55, 0.18);
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
       font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(135deg, #fff3d6, #dff7ff);
-      color: #1f2937;
-      display: flex;
+      background:
+        radial-gradient(circle at top left, rgba(248, 184, 78, 0.35), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(63, 125, 88, 0.25), transparent 32%),
+        linear-gradient(135deg, var(--cream), var(--sky));
+      color: var(--ink);
+      padding: 24px;
+    }
+
+    .screen {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero, .game-shell {
+      background: var(--card);
+      border-radius: 30px;
+      padding: clamp(22px, 4vw, 46px);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero {
+      min-height: calc(100vh - 48px);
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 34px;
       align-items: center;
-      justify-content: center;
-      padding: 32px;
     }
-    .card {
-      max-width: 820px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.86);
-      border-radius: 28px;
-      padding: 42px;
-      text-align: center;
-      box-shadow: 0 24px 80px rgba(31, 41, 55, 0.18);
-      border: 1px solid rgba(255, 255, 255, 0.7);
-    }
-    .bear {
-      width: 180px;
-      height: 180px;
-      margin: 0 auto 20px;
+
+    .bear-logo {
+      width: min(240px, 70vw);
+      height: min(240px, 70vw);
+      margin: 0 auto 24px;
       border-radius: 50%;
-      background: #9a6a3a;
+      background: var(--bear);
       position: relative;
-      box-shadow: inset 0 -14px 0 rgba(0,0,0,0.08);
+      box-shadow: inset 0 -16px 0 rgba(0, 0, 0, 0.08), 0 18px 40px rgba(154, 106, 58, 0.22);
       animation: bounce 2.4s ease-in-out infinite;
     }
-    .bear:before, .bear:after {
+
+    .bear-logo:before, .bear-logo:after {
       content: "";
       position: absolute;
-      width: 58px;
-      height: 58px;
-      background: #9a6a3a;
+      width: 74px;
+      height: 74px;
+      background: var(--bear);
       border-radius: 50%;
-      top: 0;
+      top: 4px;
     }
-    .bear:before { left: 4px; }
-    .bear:after { right: 4px; }
+
+    .bear-logo:before { left: 8px; }
+    .bear-logo:after { right: 8px; }
+
     .face {
       position: absolute;
       left: 50%;
-      top: 54%;
+      top: 55%;
       transform: translate(-50%, -50%);
-      width: 98px;
-      height: 78px;
-      background: #f3d2a2;
+      width: 128px;
+      height: 96px;
+      background: var(--bear-face);
       border-radius: 45% 45% 50% 50%;
     }
+
     .eye {
       position: absolute;
-      width: 13px;
-      height: 13px;
+      width: 16px;
+      height: 16px;
       background: #111827;
       border-radius: 50%;
-      top: 50px;
+      top: 72px;
     }
-    .eye.left { left: 55px; }
-    .eye.right { right: 55px; }
+
+    .eye.left { left: 76px; }
+    .eye.right { right: 76px; }
+
     .nose {
       position: absolute;
-      width: 24px;
-      height: 18px;
+      width: 32px;
+      height: 22px;
       background: #111827;
       border-radius: 50%;
       left: 50%;
-      top: 82px;
+      top: 112px;
       transform: translateX(-50%);
     }
+
     .smile {
       position: absolute;
-      width: 44px;
-      height: 20px;
-      border-bottom: 4px solid #111827;
+      width: 54px;
+      height: 24px;
+      border-bottom: 5px solid #111827;
       border-radius: 0 0 50px 50px;
       left: 50%;
-      top: 98px;
+      top: 132px;
       transform: translateX(-50%);
     }
+
     h1 {
-      font-size: clamp(38px, 6vw, 72px);
-      margin: 12px 0;
-      letter-spacing: -2px;
+      font-size: clamp(42px, 7vw, 86px);
+      line-height: 0.94;
+      margin: 0 0 18px;
+      letter-spacing: -3px;
     }
+
     .tagline {
-      font-size: 22px;
+      font-size: clamp(18px, 2.3vw, 25px);
       line-height: 1.5;
-      max-width: 620px;
-      margin: 0 auto 28px;
+      max-width: 660px;
+      color: var(--soft-ink);
+      margin: 0 0 26px;
     }
+
+    .pill-row { margin: 0 0 28px; }
+
     .pill {
       display: inline-block;
       padding: 12px 18px;
       border-radius: 999px;
       background: #111827;
       color: #fff;
-      font-weight: 700;
-      margin: 6px;
+      font-weight: 800;
+      margin: 6px 6px 6px 0;
+      font-size: 14px;
     }
-    .footer {
-      margin-top: 28px;
-      font-size: 16px;
-      opacity: 0.75;
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 22px;
     }
+
+    .game-card {
+      border: 0;
+      text-align: left;
+      min-height: 160px;
+      border-radius: 24px;
+      padding: 22px;
+      background: #ffffff;
+      color: var(--ink);
+      box-shadow: 0 12px 34px rgba(31, 41, 55, 0.12);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      font: inherit;
+    }
+
+    .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 45px rgba(31, 41, 55, 0.16);
+    }
+
+    .game-card.active {
+      background: linear-gradient(135deg, #fff7db, #ffe1a3);
+      border: 2px solid rgba(217, 119, 6, 0.2);
+    }
+
+    .game-card h3 {
+      margin: 0 0 10px;
+      font-size: 24px;
+    }
+
+    .game-card p {
+      margin: 0;
+      color: var(--soft-ink);
+      line-height: 1.4;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(31, 41, 55, 0.08);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .game-shell { display: none; }
+    .game-shell.show { display: block; }
+    .hero.hide { display: none; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h2 {
+      font-size: clamp(30px, 5vw, 54px);
+      margin: 0;
+      letter-spacing: -1px;
+    }
+
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-weight: 900;
+      cursor: pointer;
+      background: #111827;
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(17, 24, 39, 0.16);
+      transition: transform 0.15s ease;
+    }
+
+    .button:hover { transform: translateY(-2px); }
+    .button.secondary { background: #ffffff; color: #111827; }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .maze-card, .side-panel {
+      background: #fff;
+      border-radius: 26px;
+      padding: 18px;
+      box-shadow: 0 14px 44px rgba(31, 41, 55, 0.12);
+    }
+
+    .maze-wrap {
+      width: 100%;
+      max-width: 650px;
+      margin: 0 auto;
+      aspect-ratio: 1;
+      border-radius: 20px;
+      padding: 10px;
+      background: #6b4f2a;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #maze {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      grid-template-columns: repeat(13, 1fr);
+      grid-template-rows: repeat(13, 1fr);
+      gap: 2px;
+    }
+
+    .cell {
+      border-radius: 7px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      user-select: none;
+    }
+
+    .wall { background: var(--wall); box-shadow: inset 0 -3px 0 rgba(0,0,0,0.12); }
+    .path { background: var(--path); }
+    .goal { background: linear-gradient(135deg, #ffd166, #f59e0b); }
+    .honey:after {
+      content: "";
+      width: 42%;
+      height: 42%;
+      border-radius: 50% 50% 46% 46%;
+      background: var(--honey);
+      border: 2px solid var(--honey-dark);
+      box-shadow: 0 3px 0 rgba(0,0,0,0.12);
+    }
+    .bee:after {
+      content: "";
+      width: 46%;
+      height: 32%;
+      border-radius: 50%;
+      background: repeating-linear-gradient(90deg, #facc15 0 7px, #111827 7px 12px);
+      box-shadow: 0 -7px 0 rgba(255,255,255,0.75), 0 7px 0 rgba(255,255,255,0.75);
+      animation: wiggle 0.7s ease-in-out infinite;
+    }
+    .bear-player:after {
+      content: "";
+      width: 68%;
+      height: 68%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 38%, #111827 0 6%, transparent 7%),
+        radial-gradient(circle at 66% 38%, #111827 0 6%, transparent 7%),
+        radial-gradient(circle at 50% 55%, #111827 0 8%, transparent 9%),
+        radial-gradient(circle at 50% 70%, var(--bear-face) 0 23%, transparent 24%),
+        var(--bear);
+      border: 2px solid rgba(0,0,0,0.12);
+      box-shadow: 0 7px 14px rgba(0,0,0,0.18);
+      z-index: 2;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      border-radius: 18px;
+      background: #f9fafb;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 24px;
+      margin-top: 4px;
+    }
+
+    .mission {
+      padding: 16px;
+      border-radius: 20px;
+      background: #fff7db;
+      border: 1px solid rgba(217, 119, 6, 0.18);
+      line-height: 1.45;
+      color: var(--soft-ink);
+      margin-bottom: 16px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 58px);
+      gap: 10px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .control-btn {
+      width: 58px;
+      height: 58px;
+      border: 0;
+      border-radius: 18px;
+      background: #111827;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .control-btn.blank {
+      visibility: hidden;
+    }
+
+    .message {
+      margin-top: 14px;
+      min-height: 48px;
+      padding: 14px;
+      border-radius: 18px;
+      background: #f3f4f6;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: none;
+      background:
+        radial-gradient(circle at 15% 20%, #f59e0b 0 5px, transparent 6px),
+        radial-gradient(circle at 78% 18%, #60a5fa 0 5px, transparent 6px),
+        radial-gradient(circle at 40% 75%, #34d399 0 5px, transparent 6px),
+        radial-gradient(circle at 82% 78%, #f472b6 0 5px, transparent 6px),
+        radial-gradient(circle at 28% 48%, #a78bfa 0 5px, transparent 6px);
+      animation: party 0.8s ease-in-out infinite;
+    }
+    .confetti.show { display: block; }
+
     @keyframes bounce {
       0%, 100% { transform: translateY(0) rotate(-2deg); }
       50% { transform: translateY(-10px) rotate(2deg); }
     }
+
+    @keyframes wiggle {
+      0%, 100% { transform: translateX(0) rotate(-6deg); }
+      50% { transform: translateX(2px) rotate(6deg); }
+    }
+
+    @keyframes party {
+      0%, 100% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(8px); opacity: 0.75; }
+    }
+
+    @media (max-width: 900px) {
+      .hero, .game-layout { grid-template-columns: 1fr; }
+      .hero { text-align: center; }
+      .tagline { margin-left: auto; margin-right: auto; }
+      .games-grid { grid-template-columns: 1fr; }
+      .game-layout { gap: 16px; }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 12px; }
+      .hero, .game-shell { border-radius: 22px; }
+      .cell { border-radius: 4px; }
+      .controls { display: grid; }
+    }
   </style>
 </head>
 <body>
-  <main class="card">
-    <div class="bear">
-      <div class="face"></div>
-      <div class="eye left"></div>
-      <div class="eye right"></div>
-      <div class="nose"></div>
-      <div class="smile"></div>
-    </div>
-    <h1>Bear Testing Zone</h1>
-    <p class="tagline">A tiny fun website to prove GitHub hosting works. Built for testing, smiling, and mild bear powered chaos.</p>
-    <div>
-      <span class="pill">GitHub Ready</span>
-      <span class="pill">Static Site</span>
-      <span class="pill">Bear Approved</span>
-    </div>
-    <p class="footer">Created for Kedar Mohile. This bear is officially on duty.</p>
+  <main class="screen">
+    <section class="hero" id="landing">
+      <div>
+        <div class="bear-logo" aria-label="Smiling bear mascot">
+          <div class="face"></div>
+          <div class="eye left"></div>
+          <div class="eye right"></div>
+          <div class="nose"></div>
+          <div class="smile"></div>
+        </div>
+        <div class="pill-row">
+          <span class="pill">Bear Powered</span>
+          <span class="pill">Kid Friendly</span>
+          <span class="pill">Mini Games</span>
+        </div>
+      </div>
+
+      <div>
+        <h1>Bear Testing Zone</h1>
+        <p class="tagline">A tiny game arcade where one very determined bear tests courage, snacks, and maze survival skills.</p>
+
+        <div class="games-grid" aria-label="Game list">
+          <button class="game-card active" onclick="showGame()">
+            <h3>Honey Maze Dash</h3>
+            <p>Guide the bear through bushes, dodge silly bees, grab honey, and reach the picnic basket.</p>
+            <span class="status">Play now</span>
+          </button>
+          <button class="game-card" onclick="workInProgress('Berry Bounce')">
+            <h3>Berry Bounce</h3>
+            <p>A jumping bear berry race with springy logs and goofy timing challenges.</p>
+            <span class="status">Work in progress</span>
+          </button>
+          <button class="game-card" onclick="workInProgress('Forest Builder')">
+            <h3>Forest Builder</h3>
+            <p>Build the coziest bear forest with dens, trees, honey stands, and secret paths.</p>
+            <span class="status">Work in progress</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="game-shell" id="game">
+      <div class="topbar">
+        <div>
+          <h2>Honey Maze Dash</h2>
+          <p class="tagline" style="margin-bottom:0">Collect all honey, avoid the bees, and escape to the picnic basket.</p>
+        </div>
+        <div>
+          <button class="button secondary" onclick="showLanding()">Game List</button>
+          <button class="button" onclick="resetGame()">New Maze</button>
+        </div>
+      </div>
+
+      <div class="game-layout">
+        <div class="maze-card">
+          <div class="maze-wrap">
+            <div id="maze" aria-label="Bear maze game board"></div>
+            <div class="confetti" id="confetti"></div>
+          </div>
+        </div>
+
+        <aside class="side-panel">
+          <div class="stats">
+            <div class="stat">Level<strong id="level">1</strong></div>
+            <div class="stat">Moves<strong id="moves">0</strong></div>
+            <div class="stat">Honey<strong id="honey">0/0</strong></div>
+            <div class="stat">Score<strong id="score">0</strong></div>
+          </div>
+
+          <div class="mission">
+            <strong>Mission:</strong> The bear is late for snack time. Use arrow keys, WASD, or the buttons. Honey gives bonus points. Bees send you back to the start, because bees are tiny flying security guards.
+          </div>
+
+          <div class="controls" aria-label="Touch controls">
+            <button class="control-btn blank" aria-hidden="true"></button>
+            <button class="control-btn" onclick="moveBear(0,-1)" aria-label="Move up">↑</button>
+            <button class="control-btn blank" aria-hidden="true"></button>
+            <button class="control-btn" onclick="moveBear(-1,0)" aria-label="Move left">←</button>
+            <button class="control-btn" onclick="resetLevel()" aria-label="Restart level">↻</button>
+            <button class="control-btn" onclick="moveBear(1,0)" aria-label="Move right">→</button>
+            <button class="control-btn blank" aria-hidden="true"></button>
+            <button class="control-btn" onclick="moveBear(0,1)" aria-label="Move down">↓</button>
+            <button class="control-btn blank" aria-hidden="true"></button>
+          </div>
+
+          <div class="message" id="message">Ready. Help the bear find honey without bumping into bee drama.</div>
+        </aside>
+      </div>
+    </section>
   </main>
+
+  <script>
+    const levels = [
+      [
+        "#############",
+        "#S..H...#...#",
+        "#.#.###.#.#.#",
+        "#.#...#...#.#",
+        "#.###.#####.#",
+        "#...#...H...#",
+        "###.#.#####.#",
+        "#...#.....#.#",
+        "#.#######.#.#",
+        "#.....B...#.#",
+        "#.#####.###.#",
+        "#H....#....G#",
+        "#############"
+      ],
+      [
+        "#############",
+        "#S..#....H..#",
+        "###.#.#####.#",
+        "#...#.....#.#",
+        "#.#####.#.#.#",
+        "#.....#.#...#",
+        "#.###.#.###.#",
+        "#H#...#...#.#",
+        "#.#.#####.#.#",
+        "#.#...B...#.#",
+        "#.###.#####.#",
+        "#...H......G#",
+        "#############"
+      ],
+      [
+        "#############",
+        "#S....#.....#",
+        "#.###.#.###.#",
+        "#...#...#H#.#",
+        "###.#####.#.#",
+        "#...#.....#.#",
+        "#.###.#####.#",
+        "#H..#...B...#",
+        "###.#.###.###",
+        "#...#...#...#",
+        "#.#####.#.#.#",
+        "#.....H...#G#",
+        "#############"
+      ]
+    ];
+
+    let levelIndex = 0;
+    let grid = [];
+    let start = { x: 1, y: 1 };
+    let bear = { x: 1, y: 1 };
+    let moves = 0;
+    let score = 0;
+    let honeyTotal = 0;
+    let honeyFound = 0;
+
+    const mazeEl = document.getElementById('maze');
+    const messageEl = document.getElementById('message');
+    const confettiEl = document.getElementById('confetti');
+
+    function showGame() {
+      document.getElementById('landing').classList.add('hide');
+      document.getElementById('game').classList.add('show');
+      resetGame();
+    }
+
+    function showLanding() {
+      document.getElementById('landing').classList.remove('hide');
+      document.getElementById('game').classList.remove('show');
+    }
+
+    function workInProgress(name) {
+      alert(name + ' is still being cooked in the bear lab. Honey Maze Dash is ready to play now.');
+    }
+
+    function resetGame() {
+      levelIndex = 0;
+      score = 0;
+      loadLevel();
+    }
+
+    function resetLevel() {
+      loadLevel();
+      messageEl.textContent = 'Level restarted. The bear is pretending that never happened.';
+    }
+
+    function loadLevel() {
+      const source = levels[levelIndex];
+      grid = source.map(row => row.split(''));
+      moves = 0;
+      honeyFound = 0;
+      honeyTotal = 0;
+      confettiEl.classList.remove('show');
+
+      for (let y = 0; y < grid.length; y++) {
+        for (let x = 0; x < grid[y].length; x++) {
+          if (grid[y][x] === 'S') {
+            start = { x, y };
+            bear = { x, y };
+            grid[y][x] = '.';
+          }
+          if (grid[y][x] === 'H') honeyTotal++;
+        }
+      }
+
+      messageEl.textContent = 'Level ' + (levelIndex + 1) + ': collect the honey, then race to the picnic basket.';
+      render();
+    }
+
+    function render() {
+      mazeEl.innerHTML = '';
+
+      for (let y = 0; y < grid.length; y++) {
+        for (let x = 0; x < grid[y].length; x++) {
+          const cell = document.createElement('div');
+          const value = grid[y][x];
+          cell.className = 'cell ' + (value === '#' ? 'wall' : 'path');
+
+          if (value === 'H') cell.classList.add('honey');
+          if (value === 'B') cell.classList.add('bee');
+          if (value === 'G') cell.classList.add('goal');
+          if (bear.x === x && bear.y === y) cell.classList.add('bear-player');
+
+          mazeEl.appendChild(cell);
+        }
+      }
+
+      document.getElementById('level').textContent = levelIndex + 1;
+      document.getElementById('moves').textContent = moves;
+      document.getElementById('honey').textContent = honeyFound + '/' + honeyTotal;
+      document.getElementById('score').textContent = score;
+    }
+
+    function moveBear(dx, dy) {
+      const next = { x: bear.x + dx, y: bear.y + dy };
+      const tile = grid[next.y]?.[next.x];
+
+      if (!tile || tile === '#') {
+        messageEl.textContent = 'Bonk. That bush is stronger than it looks.';
+        return;
+      }
+
+      bear = next;
+      moves++;
+
+      if (tile === 'H') {
+        grid[next.y][next.x] = '.';
+        honeyFound++;
+        score += 100;
+        messageEl.textContent = 'Honey collected. The bear is now 12 percent more confident.';
+      } else if (tile === 'B') {
+        score = Math.max(0, score - 50);
+        bear = { ...start };
+        messageEl.textContent = 'Bee drama. Back to start, but the bear remains emotionally brave.';
+      } else if (tile === 'G') {
+        if (honeyFound < honeyTotal) {
+          messageEl.textContent = 'The picnic basket is locked by honey logic. Collect all honey first.';
+        } else {
+          winLevel();
+          return;
+        }
+      } else {
+        score += 1;
+      }
+
+      render();
+    }
+
+    function winLevel() {
+      const bonus = Math.max(50, 300 - moves * 5);
+      score += bonus;
+      confettiEl.classList.add('show');
+      render();
+
+      if (levelIndex < levels.length - 1) {
+        messageEl.textContent = 'Level cleared. Bonus ' + bonus + '. Next maze loading.';
+        setTimeout(() => {
+          levelIndex++;
+          loadLevel();
+        }, 1100);
+      } else {
+        messageEl.textContent = 'You beat every maze. The bear has retired as a snack legend with score ' + score + '.';
+      }
+    }
+
+    window.addEventListener('keydown', (event) => {
+      const key = event.key.toLowerCase();
+      if (!document.getElementById('game').classList.contains('show')) return;
+
+      if (['arrowup', 'w'].includes(key)) moveBear(0, -1);
+      if (['arrowdown', 's'].includes(key)) moveBear(0, 1);
+      if (['arrowleft', 'a'].includes(key)) moveBear(-1, 0);
+      if (['arrowright', 'd'].includes(key)) moveBear(1, 0);
+    });
+  </script>
 </body>
 </html>
