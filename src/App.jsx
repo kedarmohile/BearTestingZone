@@ -2,13 +2,14 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, Html, OrbitControls, Stars, Text } from '@react-three/drei';
 import { motion } from 'framer-motion';
 import { useEffect, useReducer, useRef } from 'react';
+import HoneywoodPhaserGame from './game/HoneywoodPhaserGame';
 
 const games = [
   {
     id: 'honeywood',
-    title: 'Honeywood Tycoon',
+    title: 'Honeywood Saga',
     status: 'Play now',
-    text: 'Build the Mohile Family Bears village, fulfill picnic orders, push back Ranger Magnus, and save the Great Festival.',
+    text: 'An isometric fantasy RPG town where the Mohile Family Bears quest, cast mythic powers, and defend Honeywood.',
   },
   {
     id: 'berry',
@@ -460,103 +461,7 @@ function StoryPanel({ onStart, onBack }) {
 }
 
 function TycoonGame({ state, dispatch }) {
-  const order = orderTemplates[state.activeOrder % orderTemplates.length];
-  const victory = state.festival >= 100;
-
-  return (
-    <main className="tycoon-shell">
-      <section className="topbar">
-        <button className="secondary" onClick={() => dispatch({ type: 'screen', screen: 'home' })}>Home</button>
-        <div>
-          <span className="tiny-label">Chapter {state.chapter}</span>
-          <strong>{victory ? 'Festival Saved' : 'Honeywood Tycoon'}</strong>
-        </div>
-        <ResourceBar state={state} />
-      </section>
-
-      <section className="tycoon-layout">
-        <div className="world-panel">
-          <Canvas camera={{ position: [0, 7.5, 9.5], fov: 48 }}>
-            <SceneLights />
-            <Stars radius={60} depth={18} count={900} factor={2.4} />
-            <HoneywoodBoard state={state} dispatch={dispatch} />
-            <OrbitControls enablePan={false} maxPolarAngle={Math.PI / 2.25} minDistance={6} maxDistance={12} />
-          </Canvas>
-          <div className="world-banner">
-            <strong>{victory ? 'Big win. Cubby is saved.' : state.log}</strong>
-            <span>Click glowing zones in the 3D board for active harvest boosts.</span>
-          </div>
-        </div>
-
-        <aside className="command-panel">
-          <section className="panel-block festival-block">
-            <div className="section-heading">
-              <span>Great Picnic Festival</span>
-              <strong>{state.festival}%</strong>
-            </div>
-            <Meter value={state.festival} color="#f59e0b" />
-            <p>{victory ? 'Honeywood is cheering. The family picnic is saved.' : 'Fill this by completing orders and defeating Magnus.'}</p>
-          </section>
-
-          <section className="panel-block order-block">
-            <div className="section-heading">
-              <span>Current Order</span>
-              <strong>{order.name}</strong>
-            </div>
-            <ul className="needs-list">
-              {Object.entries(order.wants).map(([key, value]) => (
-                <li key={key}>
-                  <span>{key}</span>
-                  <strong>{Math.floor(state.resources[key])}/{value}</strong>
-                </li>
-              ))}
-            </ul>
-            <button className="primary wide" onClick={() => dispatch({ type: 'order' })}>Deliver Order</button>
-          </section>
-
-          <section className="panel-block villain-block">
-            <div className="section-heading">
-              <span>Ranger Magnus Pressure</span>
-              <strong>{Math.floor(state.magnus)}%</strong>
-            </div>
-            <Meter value={state.magnus} color="#ef4444" />
-            <button className="danger wide" onClick={() => dispatch({ type: 'magnus' })}>Spend Courage to Push Back</button>
-          </section>
-
-          <section className="panel-block powers-block">
-            <div className="section-heading">
-              <span>Mythic Bear Powers</span>
-              <strong>{state.powersUsed} cast</strong>
-            </div>
-            <div className="power-list">
-              {mythicPowers.map((power) => (
-                <button key={power.id} onClick={() => dispatch({ type: 'power', id: power.id })}>
-                  <span style={{ background: power.color }} />
-                  <strong>{power.name}</strong>
-                  <small>{power.bear} - {power.cost} courage</small>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="panel-block">
-            <div className="section-heading">
-              <span>Family Power</span>
-              <strong>{Math.floor(state.courage)} courage</strong>
-            </div>
-            <button className="primary wide" onClick={() => dispatch({ type: 'boost' })}>Family Rally Boost</button>
-            <button className="sky wide" onClick={() => dispatch({ type: 'drone-stage' })}>Launch Honey Drone Stage</button>
-          </section>
-        </aside>
-      </section>
-
-      <section className="zone-grid">
-        {state.zones.map((zone) => (
-          <ZoneCard key={zone.id} zone={zone} state={state} dispatch={dispatch} />
-        ))}
-      </section>
-    </main>
-  );
+  return <HoneywoodPhaserGame onHome={() => dispatch({ type: 'screen', screen: 'home' })} />;
 }
 
 function DroneStage({ state, dispatch }) {
@@ -952,7 +857,7 @@ export default function App() {
   }
 
   if (state.screen === 'game') {
-    return <TycoonGame state={state} dispatch={dispatch} />;
+    return <HoneywoodPhaserGame onHome={() => dispatch({ type: 'screen', screen: 'home' })} />;
   }
 
   if (state.screen === 'drone') {
