@@ -110,6 +110,41 @@ const orderTemplates = [
   },
 ];
 
+const mythicPowers = [
+  {
+    id: 'storm-paw',
+    bear: 'Bruno Bear',
+    name: 'Storm Paw',
+    cost: 12,
+    color: '#38bdf8',
+    effect: 'Thunder knocks Ranger Magnus back with a bright cartoon boom.',
+  },
+  {
+    id: 'sun-honey',
+    bear: 'Memi Bear',
+    name: 'Sun Honey Burst',
+    cost: 10,
+    color: '#facc15',
+    effect: 'Golden honey light clears dark vines from the picnic trail.',
+  },
+  {
+    id: 'root-guard',
+    bear: 'Mumma Bear',
+    name: 'Root Guardian',
+    cost: 14,
+    color: '#22c55e',
+    effect: 'Ancient forest roots trap the villains safely until they run away.',
+  },
+  {
+    id: 'forge-roar',
+    bear: 'Papa Bear',
+    name: 'Forge Roar',
+    cost: 16,
+    color: '#fb7185',
+    effect: 'A heroic roar powers every workshop and cracks Magnus shields.',
+  },
+];
+
 const initialState = {
   screen: 'home',
   coins: 120,
@@ -127,6 +162,8 @@ const initialState = {
   magnus: 12,
   chapter: 1,
   boostUntil: 0,
+  powersUsed: 0,
+  drone: { wave: 1, charge: 60, integrity: 100, cleared: 0, combo: 0 },
   log: 'Honeywood opens at sunrise. Bruno is ready to build.',
 };
 
@@ -222,6 +259,82 @@ function reducer(state, action) {
       boostUntil: Date.now() + 15000,
       log: 'Family Rally activated. Every zone produces double for 15 seconds.',
     };
+  }
+
+  if (action.type === 'power') {
+    const power = mythicPowers.find((item) => item.id === action.id);
+    if (!power) return state;
+    if (state.courage < power.cost) {
+      return { ...state, log: `${power.name} needs ${power.cost} courage.` };
+    }
+
+    return {
+      ...state,
+      courage: state.courage - power.cost,
+      powersUsed: state.powersUsed + 1,
+      magnus: Math.max(0, state.magnus - 18),
+      festival: Math.min(100, state.festival + 7),
+      coins: state.coins + 45,
+      log: `${power.bear} casts ${power.name}. ${power.effect}`,
+    };
+  }
+
+  if (action.type === 'drone-stage') {
+    return {
+      ...state,
+      screen: 'drone',
+      log: 'Honey Drone launched. Clear ranger signal towers from the sky.',
+    };
+  }
+
+  if (action.type === 'drone-action') {
+    const drone = state.drone;
+    if (action.move === 'scan') {
+      return {
+        ...state,
+        drone: {
+          ...drone,
+          charge: Math.min(100, drone.charge + 18),
+          combo: drone.combo + 1,
+        },
+        courage: state.courage + 2,
+        log: 'Honey Drone scans the forest and finds a safe path for Cubby.',
+      };
+    }
+
+    if (action.move === 'shield') {
+      if (drone.charge < 12) return { ...state, log: 'Drone shield needs more charge.' };
+      return {
+        ...state,
+        drone: {
+          ...drone,
+          charge: drone.charge - 12,
+          integrity: Math.min(100, drone.integrity + 22),
+        },
+        log: 'Drone shield blooms like golden honey glass.',
+      };
+    }
+
+    if (action.move === 'stun') {
+      if (drone.charge < 20) return { ...state, log: 'Stun beam needs more drone charge.' };
+      const cleared = drone.cleared + 1;
+      const nextWave = cleared > 0 && cleared % 4 === 0 ? drone.wave + 1 : drone.wave;
+      return {
+        ...state,
+        coins: state.coins + 75 + drone.combo * 8,
+        courage: state.courage + 4,
+        festival: Math.min(100, state.festival + 5),
+        magnus: Math.max(0, state.magnus - 10),
+        drone: {
+          wave: nextWave,
+          cleared,
+          charge: Math.max(0, drone.charge - 20),
+          integrity: Math.max(15, drone.integrity - 6),
+          combo: drone.combo + 1,
+        },
+        log: 'Honey Drone fires a kid-safe stun beam. Ranger tower disabled.',
+      };
+    }
   }
 
   if (action.type === 'order') {
@@ -331,7 +444,8 @@ function StoryPanel({ onStart, onBack }) {
             <span>Build honey, berry, river, and kitchen zones.</span>
             <span>Hire bear helpers and upgrade each family station.</span>
             <span>Fulfill orders to fill the festival meter.</span>
-            <span>Use courage honey to defeat Ranger Magnus.</span>
+            <span>Unlock Ragnarok-style bear powers to defeat Ranger Magnus with no blood or scary gore.</span>
+            <span>Launch the Honey Drone stage to clear ranger signal towers from the sky.</span>
             <span>Win by restoring the Great Picnic Festival.</span>
           </div>
           <div className="actions">
@@ -409,12 +523,29 @@ function TycoonGame({ state, dispatch }) {
             <button className="danger wide" onClick={() => dispatch({ type: 'magnus' })}>Spend Courage to Push Back</button>
           </section>
 
+          <section className="panel-block powers-block">
+            <div className="section-heading">
+              <span>Mythic Bear Powers</span>
+              <strong>{state.powersUsed} cast</strong>
+            </div>
+            <div className="power-list">
+              {mythicPowers.map((power) => (
+                <button key={power.id} onClick={() => dispatch({ type: 'power', id: power.id })}>
+                  <span style={{ background: power.color }} />
+                  <strong>{power.name}</strong>
+                  <small>{power.bear} - {power.cost} courage</small>
+                </button>
+              ))}
+            </div>
+          </section>
+
           <section className="panel-block">
             <div className="section-heading">
               <span>Family Power</span>
               <strong>{Math.floor(state.courage)} courage</strong>
             </div>
             <button className="primary wide" onClick={() => dispatch({ type: 'boost' })}>Family Rally Boost</button>
+            <button className="sky wide" onClick={() => dispatch({ type: 'drone-stage' })}>Launch Honey Drone Stage</button>
           </section>
         </aside>
       </section>
@@ -423,6 +554,41 @@ function TycoonGame({ state, dispatch }) {
         {state.zones.map((zone) => (
           <ZoneCard key={zone.id} zone={zone} state={state} dispatch={dispatch} />
         ))}
+      </section>
+    </main>
+  );
+}
+
+function DroneStage({ state, dispatch }) {
+  return (
+    <main className="drone-shell">
+      <section className="drone-hud">
+        <button className="secondary" onClick={() => dispatch({ type: 'screen', screen: 'game' })}>Back to Tycoon</button>
+        <div>
+          <span className="tiny-label">Sky mission wave {state.drone.wave}</span>
+          <strong>Honey Drone: Ranger Signal Raid</strong>
+        </div>
+        <div className="resources">
+          <span>Charge {state.drone.charge}</span>
+          <span>Integrity {state.drone.integrity}</span>
+          <span>Towers {state.drone.cleared}</span>
+        </div>
+      </section>
+      <section className="drone-arena">
+        <Canvas camera={{ position: [0, 6.2, 10], fov: 48 }}>
+          <SceneLights />
+          <Stars radius={60} depth={18} count={1300} factor={3} />
+          <DroneScene drone={state.drone} />
+        </Canvas>
+        <div className="drone-brief">
+          <strong>{state.log}</strong>
+          <span>Arcade goal: scan for charge, shield when damaged, then stun ranger signal towers.</span>
+        </div>
+      </section>
+      <section className="drone-controls">
+        <button className="primary" onClick={() => dispatch({ type: 'drone-action', move: 'scan' })}>Scan Forest</button>
+        <button className="sky" onClick={() => dispatch({ type: 'drone-action', move: 'stun' })}>Stun Tower</button>
+        <button className="secondary" onClick={() => dispatch({ type: 'drone-action', move: 'shield' })}>Honey Shield</button>
       </section>
     </main>
   );
@@ -521,6 +687,7 @@ function HoneywoodBoard({ state, dispatch, preview = false }) {
       <MagnusTower pressure={magnus} />
       <BearFamily position={[-0.2, 0.1, 2.9]} />
       <FestivalBasket position={[0, 0.2, 0]} festival={festival} />
+      {state?.powersUsed > 0 && <PowerStorm count={state.powersUsed} />}
     </>
   );
 }
@@ -593,6 +760,30 @@ function BearFamily({ position }) {
   );
 }
 
+function PowerStorm({ count }) {
+  const ref = useRef();
+  useFrame(({ clock }) => {
+    if (ref.current) {
+      ref.current.rotation.y = clock.elapsedTime * 1.4;
+      ref.current.position.y = 0.2 + Math.sin(clock.elapsedTime * 2) * 0.08;
+    }
+  });
+
+  return (
+    <group ref={ref} position={[0, 0.25, 0]}>
+      {mythicPowers.map((power, index) => {
+        const angle = (index / mythicPowers.length) * Math.PI * 2;
+        return (
+          <mesh key={power.id} position={[Math.cos(angle) * (2.7 + count * 0.08), 1.2, Math.sin(angle) * (2.7 + count * 0.08)]}>
+            <octahedronGeometry args={[0.22, 0]} />
+            <meshStandardMaterial color={power.color} emissive={power.color} emissiveIntensity={0.9} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
 function Bear3D({ position, color, scale = 1 }) {
   return (
     <group position={position} scale={scale}>
@@ -613,6 +804,85 @@ function Bear3D({ position, color, scale = 1 }) {
         <meshStandardMaterial color="#f3d2a2" />
       </mesh>
     </group>
+  );
+}
+
+function DroneScene({ drone }) {
+  const droneRef = useRef();
+  const towerRef = useRef();
+  useFrame(({ clock }) => {
+    if (droneRef.current) {
+      droneRef.current.position.x = Math.sin(clock.elapsedTime * 1.9) * 2.7;
+      droneRef.current.position.y = 2.7 + Math.sin(clock.elapsedTime * 3.2) * 0.2;
+      droneRef.current.rotation.z = Math.sin(clock.elapsedTime * 2.4) * 0.16;
+    }
+    if (towerRef.current) {
+      towerRef.current.rotation.y = clock.elapsedTime * 0.45;
+    }
+  });
+
+  return (
+    <>
+      <mesh rotation-x={-Math.PI / 2} position={[0, -0.08, 0]}>
+        <circleGeometry args={[8, 64]} />
+        <meshStandardMaterial color="#12355b" roughness={0.8} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]}>
+        <ringGeometry args={[3.2, 3.55, 64]} />
+        <meshStandardMaterial color="#38bdf8" emissive="#38bdf8" emissiveIntensity={0.25} />
+      </mesh>
+      <group ref={droneRef}>
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[0.9, 0.22, 0.6]} />
+          <meshStandardMaterial color="#facc15" emissive="#f59e0b" emissiveIntensity={0.35} />
+        </mesh>
+        {[-0.72, 0.72].map((x) =>
+          [-0.48, 0.48].map((z) => (
+            <group key={`${x}-${z}`} position={[x, 0, z]}>
+              <mesh rotation-x={Math.PI / 2}>
+                <torusGeometry args={[0.22, 0.025, 10, 28]} />
+                <meshStandardMaterial color="#e0f2fe" emissive="#38bdf8" emissiveIntensity={0.5} />
+              </mesh>
+              <mesh>
+                <sphereGeometry args={[0.08, 12, 12]} />
+                <meshStandardMaterial color="#0f172a" />
+              </mesh>
+            </group>
+          ))
+        )}
+        <Text position={[0, 0.22, 0]} fontSize={0.18} color="#111827" anchorX="center">
+          HONEY DRONE
+        </Text>
+      </group>
+      <group ref={towerRef}>
+        {Array.from({ length: 5 }).map((_, index) => {
+          const angle = (index / 5) * Math.PI * 2 + drone.wave * 0.25;
+          const disabled = index < drone.cleared % 5;
+          return (
+            <group key={index} position={[Math.cos(angle) * 3.4, 0, Math.sin(angle) * 3.4]}>
+              <mesh position={[0, 0.7, 0]}>
+                <cylinderGeometry args={[0.22, 0.32, 1.4, 8]} />
+                <meshStandardMaterial
+                  color={disabled ? '#64748b' : '#7f1d1d'}
+                  emissive={disabled ? '#0f172a' : '#ef4444'}
+                  emissiveIntensity={disabled ? 0.1 : 0.5}
+                />
+              </mesh>
+              <mesh position={[0, 1.55, 0]}>
+                <octahedronGeometry args={[0.28, 0]} />
+                <meshStandardMaterial color={disabled ? '#94a3b8' : '#f97316'} emissive={disabled ? '#64748b' : '#f97316'} emissiveIntensity={0.8} />
+              </mesh>
+            </group>
+          );
+        })}
+      </group>
+      <Html position={[0, 3.5, -2.6]} center distanceFactor={9}>
+        <div className="zone-label">
+          <strong>Combo {drone.combo}</strong>
+          <span>Wave {drone.wave} sky patrol</span>
+        </div>
+      </Html>
+    </>
   );
 }
 
@@ -683,6 +953,10 @@ export default function App() {
 
   if (state.screen === 'game') {
     return <TycoonGame state={state} dispatch={dispatch} />;
+  }
+
+  if (state.screen === 'drone') {
+    return <DroneStage state={state} dispatch={dispatch} />;
   }
 
   return <Home onPlay={() => dispatch({ type: 'screen', screen: 'story' })} />;
