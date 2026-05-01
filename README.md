@@ -26,8 +26,24 @@ npm install
 npm run dev
 ```
 
+Local development opens at:
+
+```text
+http://localhost:5173/
+```
+
 ## Build
 
 ```bash
 npm run build
 ```
+
+## Public URL
+
+The GitHub Pages deployment is configured for:
+
+```text
+https://kedarmohile.github.io/BearTestingZone/
+```
+
+If the URL is not live yet, enable GitHub Pages for this repository with source set to GitHub Actions, then rerun the Deploy to GitHub Pages workflow.
