@@ -1,23 +1,38 @@
-# Mohile Family Bears: Honeywood Tycoon
+# Mohile Family Bears: Honeywood Saga
 
 React/Vite SPA game prototype for the Mohile Family Bears universe.
 
 ## Current Game
 
-Honeywood Tycoon is an epic, no-ads idle tycoon where the family rebuilds Honeywood, fulfills picnic orders, unlocks production zones, pushes back Ranger Magnus, and restores the Great Picnic Festival.
+Honeywood Saga is pivoting from a custom toy prototype toward a sourced RPG foundation. The current playable route mounts a Phaser-based Honeywood slice where Bruno Bear collects Brave Honey, uses Storm Paw, avoids/stuns a ranger, and completes the Picnic Basket rescue quest.
 
-New combat and skill layers are kid-friendly:
+## Foundation Direction
 
-- Mythic bear powers inspired by Ragnarok-scale fantasy, but with cartoon knockbacks, shields, roots, light, and thunder instead of blood or gore.
-- Honey Drone stage where players scan, shield, and stun ranger signal towers from the sky.
-- Ranger Magnus is defeated by courage, festival progress, and family teamwork.
+Standing rule: search hard before creating. Use mature open-source foundations first, then modify for Mohile Family Bears.
+
+Chosen direction:
+
+- Reldens as the main RPG/MMO systems reference
+- Phaser for browser gameplay runtime
+- Colyseus for future online multiplayer
+- React/Vite for landing, story, menus, character select, inventory, and settings
+
+## Current Systems
+
+- Phaser gameplay surface
+- Bruno Bear playable prototype
+- Brave Honey Basket Rescue quest
+- Character/equipment/power data manifests
+- Offline bot planning data
+- GitHub Pages deployment workflow
 
 ## Tech
 
 - React + Vite
-- Three.js via `@react-three/fiber`
-- `@react-three/drei` for scene helpers
-- Framer Motion for page transitions
+- Phaser
+- Colyseus client dependencies for later online play
+- Reldens items/skills/modifiers packages for RPG-system direction
+- Three.js remains only for legacy/story prototype surfaces
 
 ## Run
 
