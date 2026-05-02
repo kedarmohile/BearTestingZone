@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { bearCharacters, equipmentCatalog, powerCatalog } from '../gameData/characters';
 import { offlineBotProfiles, questCatalog } from '../gameData/quests';
@@ -28,18 +28,26 @@ function isoToScreen(tileX, tileY) {
 class HoneywoodScene extends Phaser.Scene {
   constructor() {
     super('HoneywoodScene');
-    this.playerSpeed = 170;
+    this.playerSpeed = 190;
     this.questProgress = 0;
     this.questComplete = false;
+    this.rangerCourage = 3;
+    this.droneMode = false;
+  }
+
+  init(data) {
+    this.selectedBear = data.selectedBear || bearCharacters[0];
+    this.selectedPower = data.selectedPower || powerCatalog[0];
   }
 
   create() {
     this.cameras.main.setBackgroundColor('#123849');
+    this.physics.world.setBounds(0, 0, 960, 540);
     this.createWorld();
     this.createCharacters();
     this.createHud();
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.keys = this.input.keyboard.addKeys('W,A,S,D,SPACE');
+    this.keys = this.input.keyboard.addKeys('W,A,S,D,SPACE,E');
     this.physics.add.overlap(this.player, this.honeyGroup, this.collectHoney, undefined, this);
     this.physics.add.overlap(this.player, this.ranger, this.stunRanger, undefined, this);
     this.physics.add.overlap(this.player, this.basketZone, this.completeQuest, undefined, this);
@@ -66,8 +74,14 @@ class HoneywoodScene extends Phaser.Scene {
 
     this.add.rectangle(610, 340, 116, 58, 0xf2c46d).setStrokeStyle(4, 0x7b4b2a);
     this.add.text(552, 331, 'Picnic Basket', { fontSize: '13px', color: '#2d1708', fontStyle: 'bold' });
+    this.add.arc(610, 324, 42, 180, 360, false, 0x000000, 0).setStrokeStyle(5, 0x7b4b2a);
     this.basketZone = this.add.zone(610, 340, 128, 80);
     this.physics.add.existing(this.basketZone, true);
+
+    this.add.rectangle(780, 160, 92, 148, 0x334155, 0.84).setStrokeStyle(4, 0x94a3b8);
+    this.add.text(738, 92, 'Signal\nTower', { fontSize: '14px', color: '#e0f2fe', fontStyle: 'bold', align: 'center' });
+    this.add.circle(780, 76, 12, 0xf43f5e).setStrokeStyle(4, 0xfda4af);
+    this.add.text(730, 222, 'Press E: Honey Drone', { fontSize: '13px', color: '#fef3c7', fontStyle: 'bold' });
 
     this.honeyGroup = this.physics.add.staticGroup();
     [
@@ -88,7 +102,8 @@ class HoneywoodScene extends Phaser.Scene {
     this.physics.add.existing(this.player);
     this.player.body.setSize(42, 42);
     this.player.body.setOffset(-21, -21);
-    this.drawBear(this.player, 0x9a6a3a, 'Bruno');
+    this.player.body.setCollideWorldBounds(true);
+    this.drawBear(this.player, this.selectedBear.tint || 0x9a6a3a, this.selectedBear.shortName || this.selectedBear.name.split(' ')[0]);
 
     this.ranger = this.add.container(632, 274);
     this.physics.add.existing(this.ranger);
@@ -113,6 +128,11 @@ class HoneywoodScene extends Phaser.Scene {
     container.add(this.add.circle(7, -22, 3, 0x20140d));
     container.add(this.add.circle(0, -14, 4, 0x20140d));
     container.add(this.add.rectangle(0, 14, 34, 42, color));
+    container.add(this.add.rectangle(0, 3, 44, 8, 0xfde68a, 0.82));
+    if (this.selectedBear?.id === 'papa') container.add(this.add.rectangle(0, -44, 36, 9, 0x475569));
+    if (this.selectedBear?.id === 'memi') container.add(this.add.circle(0, -46, 9, 0xfacc15));
+    if (this.selectedBear?.id === 'mumma') container.add(this.add.arc(0, -44, 18, 200, 340, false, 0x22c55e).setStrokeStyle(5, 0x22c55e));
+    if (this.selectedBear?.id === 'cubby') container.add(this.add.rectangle(0, 24, 28, 8, 0x38bdf8));
     container.add(this.add.text(-28, 38, label, { fontSize: '12px', color: '#fff', fontStyle: 'bold' }));
   }
 
@@ -124,20 +144,26 @@ class HoneywoodScene extends Phaser.Scene {
   }
 
   createHud() {
-    const quest = questCatalog[0];
-    this.questText = this.add.text(26, 58, `Quest: ${quest.objectives[0].label}, then ${quest.objectives[1].label}.`, {
+    this.questText = this.add.text(26, 58, `Quest: collect Brave Honey, calm rangers, then reach the basket.`, {
       fontFamily: 'Arial',
       fontSize: '15px',
       color: '#dbeafe',
     });
     this.questText.setScrollFactor(0);
 
-    this.powerText = this.add.text(26, 82, 'Power: press SPACE for Storm Paw stun.', {
+    this.powerText = this.add.text(26, 82, `Power: SPACE ${this.selectedPower.name}. Drone: press E to fly.`, {
       fontFamily: 'Arial',
       fontSize: '15px',
       color: '#fde68a',
     });
     this.powerText.setScrollFactor(0);
+
+    this.statusText = this.add.text(26, 106, 'Ranger courage: 3 | Drone stage: standby', {
+      fontFamily: 'Arial',
+      fontSize: '15px',
+      color: '#bbf7d0',
+    });
+    this.statusText.setScrollFactor(0);
   }
 
   update(_, delta) {
@@ -150,8 +176,12 @@ class HoneywoodScene extends Phaser.Scene {
     if (this.cursors.up.isDown || this.keys.W.isDown) body.setVelocityY(-velocity);
     if (this.cursors.down.isDown || this.keys.S.isDown) body.setVelocityY(velocity);
 
-    if (this.keys.SPACE.isDown && !this.stormActive) {
-      this.castStormPaw();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE) && !this.stormActive) {
+      this.castPower();
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.E)) {
+      this.toggleDroneMode();
     }
 
     this.moveRanger(delta);
@@ -176,9 +206,10 @@ class HoneywoodScene extends Phaser.Scene {
     }
   }
 
-  castStormPaw() {
+  castPower() {
     this.stormActive = true;
-    const ring = this.add.circle(this.player.x, this.player.y - 14, 18, 0x38bdf8, 0.35).setStrokeStyle(5, 0xbae6fd);
+    const powerColor = this.selectedPower.id.includes('sun') ? 0xfacc15 : this.selectedPower.id.includes('root') ? 0x22c55e : 0x38bdf8;
+    const ring = this.add.circle(this.player.x, this.player.y - 14, 18, powerColor, 0.35).setStrokeStyle(5, 0xffffff);
     this.tweens.add({
       targets: ring,
       scale: 4,
@@ -193,14 +224,39 @@ class HoneywoodScene extends Phaser.Scene {
     });
   }
 
+  toggleDroneMode() {
+    this.droneMode = !this.droneMode;
+    this.playerSpeed = this.droneMode ? 260 : 190;
+    const drone = this.add.circle(this.player.x, this.player.y - 70, 14, 0xe0f2fe).setStrokeStyle(4, 0x38bdf8);
+    this.tweens.add({
+      targets: drone,
+      x: 780,
+      y: 76,
+      scale: 1.6,
+      alpha: 0,
+      duration: 900,
+      onComplete: () => drone.destroy(),
+    });
+    this.statusText.setText(this.droneMode ? 'Ranger courage: boosted | Drone stage: active sky run' : `Ranger courage: ${this.rangerCourage} | Drone stage: standby`);
+  }
+
   stunRanger() {
     if (!this.stormActive) {
-      this.questText.setText('Ranger bumped Bruno. Use Storm Paw, then finish the rescue.');
+      this.questText.setText(`Ranger blocked ${this.selectedBear.shortName || 'the bear'}. Use a power, then finish the rescue.`);
       return;
     }
+    this.rangerCourage -= 1;
     this.ranger.x = 690;
     this.ranger.y = 210;
-    this.questText.setText('Storm Paw worked. Ranger is safely stunned and ran back to the trail.');
+    if (this.rangerCourage <= 0) {
+      this.ranger.setVisible(false);
+      this.ranger.body.enable = false;
+      this.questText.setText('Ranger Magnus team retreated safely. No blood, just a brave bear win.');
+      this.statusText.setText('Ranger courage: defeated | Drone stage: clear');
+      return;
+    }
+    this.questText.setText(`${this.selectedPower.name} worked. Ranger is safely stunned and ran back to the trail.`);
+    this.statusText.setText(`Ranger courage: ${this.rangerCourage} | Drone stage: ${this.droneMode ? 'active' : 'standby'}`);
   }
 
   completeQuest() {
@@ -220,7 +276,7 @@ class HoneywoodScene extends Phaser.Scene {
       fontSize: '16px',
       color: '#dbeafe',
     });
-    this.add.text(326, 292, 'Next: add character select, inventory, and the first bot quest.', {
+    this.add.text(260, 292, 'Next: full quest hub, character wardrobe, pets, mounts, and online co-op.', {
       fontFamily: 'Arial',
       fontSize: '15px',
       color: '#bae6fd',
@@ -231,9 +287,13 @@ class HoneywoodScene extends Phaser.Scene {
 export default function HoneywoodPhaserGame({ onHome }) {
   const containerRef = useRef(null);
   const gameRef = useRef(null);
-  const bruno = bearCharacters.find((bear) => bear.id === 'bruno');
-  const starterWeapon = equipmentCatalog.find((item) => item.id === bruno.starterEquipment.mainHand);
-  const starterPower = powerCatalog.find((power) => power.id === bruno.powers[0]);
+  const [selectedBearId, setSelectedBearId] = useState('bruno');
+  const selectedBear = useMemo(
+    () => bearCharacters.find((bear) => bear.id === selectedBearId) || bearCharacters[0],
+    [selectedBearId],
+  );
+  const starterWeapon = equipmentCatalog.find((item) => item.id === selectedBear.starterEquipment.mainHand);
+  const starterPower = powerCatalog.find((power) => power.id === selectedBear.powers[0]);
   const quest = questCatalog[0];
 
   useEffect(() => {
@@ -256,11 +316,16 @@ export default function HoneywoodPhaserGame({ onHome }) {
       scene: HoneywoodScene,
     });
 
+    gameRef.current.scene.start('HoneywoodScene', {
+      selectedBear,
+      selectedPower: starterPower,
+    });
+
     return () => {
       gameRef.current?.destroy(true);
       gameRef.current = null;
     };
-  }, []);
+  }, [selectedBear, starterPower]);
 
   return (
     <main className="phaser-shell">
@@ -276,8 +341,19 @@ export default function HoneywoodPhaserGame({ onHome }) {
         <div className="phaser-game-frame" ref={containerRef} />
         <aside className="phaser-side-panel">
           <span className="tiny-label">Playable Bear</span>
-          <h2>{bruno.name}</h2>
-          <p>{bruno.storyHook}</p>
+          <h2>{selectedBear.name}</h2>
+          <p>{selectedBear.storyHook}</p>
+          <div className="character-roster" aria-label="Character select">
+            {bearCharacters.map((bear) => (
+              <button
+                className={bear.id === selectedBearId ? 'roster-button active' : 'roster-button'}
+                key={bear.id}
+                onClick={() => setSelectedBearId(bear.id)}
+              >
+                {bear.name.replace(' Bear', '')}
+              </button>
+            ))}
+          </div>
           <div className="loadout-card quest-card">
             <strong>{quest.title}</strong>
             <span>{quest.story}</span>
